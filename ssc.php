@@ -73,6 +73,7 @@
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <title>SSC 库存状态监控</title>
     <style type="text/css">
+    *{box-sizing: border-box;}
     html{
         background: #ecf0f5;
     }
@@ -215,6 +216,8 @@
         padding:0 15px;
         font-size: 12px;
         color:#6c6c6c;
+        width:100%;
+        display: table;
     }
     .item.head{
         background-color: #f9f9f9;
@@ -227,10 +230,16 @@
 
     .item span {
         width: 75px;
-        display: inline-block;
+        display: table-cell;
+        vertical-align: middle;
     }
     
-    .item span{ width:100px; }
+    .item span{ 
+        width:100px; 
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
     .item span.w1 {
         width: 60px;
     }
@@ -240,14 +249,15 @@
         color:#333;
     }
     .item span.w3{
-        width: 120px; 
+        width: 130px; 
+        
     }
 
     .item span .uptime{ padding-left:8px; font-size: 9px; }
     .item span .status{ width:42px; }
     .item span.op{
-        position:absolute;right:0;
-        text-align:right;width:150px !important;
+        width: initial;
+        text-align:right;
     }
     .item span.op a{ padding: 5px;}
     .item.head{
@@ -295,6 +305,7 @@
             <span>磁盘</span>
             <span>网络</span>
             <span class="w3">价格</span>
+            <span class="op"></span>
         </div>
     </section>
 
