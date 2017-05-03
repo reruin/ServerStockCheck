@@ -400,13 +400,13 @@ $("<span>添加</span><select>" + s + "</select>")
             }
 
             function start() {
-                var tpl = '<div class="item" id="item_{id}">' +
+                var tpl = '<div class="item" id="item_{type}_{id}">' +
                     '<span>{data.title}</span>' +
                     '<span class="w2">' +
                     '<span class="status">{status_str}</span>' +
                     '<span class="uptime"></span>' +
                     '</span>' +
-                    '<span class="w3">{data.cpu}</span><span>{data.ram}</span><span>{data.disk}</span><span>{data.network}</span><span class="w3">{data.price}</span><span class="op"><label><input type="checkbox" checked />音乐提醒</label><a href="#" class="remove" data-id="{id}">移除</a></span>' +
+                    '<span class="w3">{data.cpu}</span><span>{data.ram}</span><span>{data.disk}</span><span>{data.network}</span><span class="w3">{data.price}</span><span class="op"><label><input type="checkbox" checked />音乐提醒</label><a href="#" class="remove" data-id="{type}_{id}">移除</a></span>' +
                     '</div>';
 
                     //<a href="https://www.kimsufi.com/en/order/kimsufi.cgi?hard={id}" target="_blank">下单</a>
@@ -419,14 +419,14 @@ $("<span>添加</span><select>" + s + "</select>")
                         save( app.getModels() );
                     })
                     .on('remove' , function(data){
-                        var id = data.id;
+                        var id = data.type+"_"+data.id;
                         $('#item_'+id).remove();
                         save( app.getModels() );
                         notify();
                     })
                     .on('update', function(data) {
                         for (var i in data) {
-                            var el = $('#item_' + data[i].id);
+                            var el = $('#item_' +data[i].type+'_'+ data[i].id);
                             if (el) {
                                 el.find('.uptime').html(data[i].uptime + '秒前');
                                 el.find('.status').html(data[i].status_str);
