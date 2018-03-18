@@ -51,6 +51,16 @@
         exit();
     }
 
+    function checkCommon($url , $f){
+        $resp = file_get_contents( $url );
+        $status = array(
+            'status'=> strpos($resp , $f) === false && strpos($resp , 'Cloudflare') === false
+        );
+        header('Content-type: application/json');
+        echo( json_encode($status));
+        exit();
+    }
+
     if(!empty($_GET['id']) && !empty($_GET['type'])){
         $id = $_GET['id'];
         $type = $_GET['type'];
@@ -63,6 +73,11 @@
         }
         else if($type == 'ks'){
             checkKimsufi($id);
+        }
+        else if($type == 'common'){
+            $url = urldecode($_GET['u']);
+            $f = $_GET['f'];
+            checkCommon($url , $f);
         }
     }
 ?>
