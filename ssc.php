@@ -99,6 +99,16 @@
         exit();
     }
 
+    function checkSys($id){
+        $resp = request( "https://ca.ovh.com/engine/api/dedicated/server/availabilities?country=we&hardware=1801armada01".$id);
+        
+        $status = array(
+            'status'=> preg_match('/availability":"(?!unavailable)/' , $resp) === 1
+        );
+        header('Content-type: application/json');
+        echo( json_encode($status));
+        exit();
+    }
 
     function checkWSI($id){
         $resp = file_get_contents( "https://www.wholesaleinternet.net/out-of-stock/?id=" . $id);
@@ -132,6 +142,9 @@
         }
         else if($type == 'ks'){
             checkKimsufi($id);
+        }
+        else if($type == 'sys'){
+            checkSys($id);
         }
         else if($type == 'common'){
             $url = urldecode($_GET['u']);
@@ -392,7 +405,7 @@
         <h2>库存状态监控</h2>
         <div class='menu'>
             <div>
-                <a id="j_notify">设置消息</a>
+                <a id="j_notify">设置消息推送</a>
             </div>
             <div class="models"></div>
             <div class="tick">
@@ -506,7 +519,7 @@ $("<span>添加</span><select>" + s + "</select>")
 
                 $('#j_notify').on('click' , function(){
                     var default_url = store.notify_url || ''
-                    var notify_url = window.prompt('消息地址，仅限GET方式。\n1、使用ftqq通知，不支持占位符，\n格式 https://sc.ftqq.com/xxxx.send\n2、自定义的消息地址，可用使用以下占位符 \n{title} : 名称\n{link}: 下单地址（如果有）\n{type}：类型',default_url)
+                    var notify_url = window.prompt('消息推送地址，仅限GET方式。\n1、使用ftqq推送通知，不支持占位符，\n格式 https://sc.ftqq.com/xxxx.send\n2、自定义推送地址，可用使用以下占位符 \n{title} : 名称\n{link}: 下单地址（如果有）\n{type}：类型',default_url)
                     if( notify_url !== null ){
                         store.notify_url = notify_url
                     }
