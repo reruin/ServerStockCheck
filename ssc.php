@@ -15,6 +15,7 @@
      *
      * changelog
      * 2018-08-20
+     * + 添加消息通知
      * * 修改ks的监测逻辑
      * * 新的样式
      *
@@ -138,6 +139,12 @@
             checkCommon($url , $f);
         }
     }
+
+    if($_GET['a']=='proxy' && !empty($_GET['url'])){
+        $url = urldecode($_GET['url']);
+        echo( request($url) );
+        exit();
+    }
 ?>
 
 <!doctype html>
@@ -145,6 +152,12 @@
 <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <title>SSC 库存状态监控</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="screen-orientation" content="portrait"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="full-screen" content="yes">
+    <meta name="x5-fullscreen" content="true">
     <style type="text/css">
     *{box-sizing: border-box;}
     html{
@@ -293,7 +306,7 @@
     table td:first-child,th:first-child{
         padding-left:25px;
     }
-    table td:last-child,th:first-child{
+    table td:last-child,th:last-child{
         padding-right:25px;
     }
     tbody td{
@@ -304,7 +317,29 @@
         padding:16px;font-size:13px;
     }
     
-    
+    @media screen and (max-width:768px) {
+      table th:nth-child(3),
+      table td:nth-child(3),
+      table th:nth-child(6),
+      table td:nth-child(6)
+      {
+        display: none;
+      }
+    }
+
+    @media screen and (max-width:480px) {
+      table th:nth-child(3),
+      table td:nth-child(3),
+      table th:nth-child(4),
+      table td:nth-child(4),
+      table th:nth-child(5),
+      table td:nth-child(5),
+      table th:nth-child(6),
+      table td:nth-child(6)
+      {
+        display: none;
+      }
+    }
     
     .item span {
         vertical-align: middle;
@@ -328,7 +363,7 @@
         color: #333;
     }
     .w3{
-        width: 100px; 
+        min-width: 100px; 
     }
 
     .uptime{ padding-left:8px; font-size: 9px; }
@@ -356,6 +391,9 @@
     <header>
         <h2>库存状态监控</h2>
         <div class='menu'>
+            <div>
+                <a id="j_notify">设置消息</a>
+            </div>
             <div class="models"></div>
             <div class="tick">
                 <span>刷新时间</span>
@@ -374,8 +412,8 @@
         <table cellspacing="0" cellpadding="0" border="0">
             <thead>
                 <tr>
-                    <th>类型</th>
-                    <th class="w2">状态</th>
+                    <th class="w3">类型</th>
+                    <th class="w3">状态</th>
                     <th class="w2">CPU</th>
                     <th>内存</th>
                     <th>磁盘</th>
@@ -428,7 +466,7 @@
                     s += template(tpl, list[i]);
                 }
 
-                s = "<span>添加</span><select>" + s + "</select>";
+                s = "<select placeholder='请选择服务器'><option value=''>请选择服务器</option>" + s + "</select>";
                 $("header .models").append(s)
                 .find("select").change(function() {
                     app.add($(this).val());
@@ -466,6 +504,14 @@ $("<span>添加</span><select>" + s + "</select>")
                     if(url) window.open(url);
                 })
 
+                $('#j_notify').on('click' , function(){
+                    var default_url = store.notify_url || ''
+                    var notify_url = window.prompt('消息地址，仅限GET方式。\n1、使用ftqq通知，不支持占位符，\n格式 https://sc.ftqq.com/xxxx.send\n2、自定义的消息地址，可用使用以下占位符 \n{title} : 名称\n{link}: 下单地址（如果有）\n{type}：类型',default_url)
+                    if( notify_url !== null ){
+                        store.notify_url = notify_url
+                    }
+                })
+
             }
 
             function save(d){
@@ -474,6 +520,24 @@ $("<span>添加</span><select>" + s + "</select>")
 
             function read(){
                 return store.task ? JSON.parse( store.task ) : null;
+            }
+
+            function emit(d){
+                if(store.notify_url){
+                    var url = store.notify_url
+                    if(url.indexOf('https://sc.ftqq.com/')>=0){
+                        url = url + '?text={type}有货_{time}&desp=[下单]({link})'
+                    }
+                    
+                    var obj = {title:d.data.title , id:d.data.id , type:d.data.type , link:ssc.getOrderUrl(d.id , d.type) , time:Date.now()}
+                    $.ajax({
+                        url:'?a=proxy&url='+encodeURIComponent(template(url,obj)) ,
+                        method:'get',
+                        success:function(){
+
+                        }
+                    })
+                }
             }
 
             function notify(){
@@ -521,6 +585,9 @@ $("<span>添加</span><select>" + s + "</select>")
                             }
                         }
                         notify();
+                    })
+                    .on('hit', function(data) {
+                        emit(data)
                     })
 
                     .add( read() || ['ks--1801sk12', 'ks--1804sk12']);
