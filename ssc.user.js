@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ssc
 // @namespace    https://github.com/reruin
-// @version      0.2
+// @version      0.2.1
 // @license      Apache License 2.0
 // @description  ssc
 // @author       reruin@gmail.com
@@ -374,7 +374,7 @@ nw.c({
                       this.nextTick()
                     }else{
 
-                      createOrder(this.sessionIdUser , this.dedicatedServer, this.quantity , this.billingCountry).then(resp=>{
+                      createOrder(this.sessionId , this.dedicatedServer, this.quantity , this.billingCountry).then(resp=>{
                         if(!resp.error && resp.answer && resp.answer.orderId){
                           this.handleSuccess(resp.answer)
                         }else{
