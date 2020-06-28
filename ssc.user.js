@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ssc
 // @namespace    https://github.com/reruin
-// @version      0.2
+// @version      0.2.1
 // @license      Apache License 2.0
 // @description  ssc
 // @author       reruin@gmail.com
@@ -37,7 +37,7 @@
                 document.getElementsByTagName('body')[0].appendChild(el);
             }
         },
-       
+
     }
 
 
@@ -238,11 +238,11 @@ nw.c({
                 return http
             }())
 
-         
+
 
 
             const ks = (function(request){
-              
+
 
               /**
                * 获取匿名Session
@@ -273,14 +273,14 @@ nw.c({
                       resolve(false)
                     }else{
                       let invalid = (resp.answer[0].zones || []).every( i=>(i.availability == -1))
-                      resolve(invalid) 
+                      resolve(invalid)
                     }
                   })
                 })
               }
 
               /**
-               * 另一种检测库存 ， 显然是有缓存 
+               * 另一种检测库存 ， 显然是有缓存
                */
               const checkAvailabilityFromGlobal = ( sessionId , dedicatedServer , billingCountry , language) => {
                 return request('https://www.ovh.com/engine/api/dedicated/server/availabilities', {
@@ -307,11 +307,11 @@ nw.c({
                 })
               }
 
-              
+
               /**
                * 登录，返回
                * {"answer":{"__class":"sessionType:sessionWithToken","session":{"__class":"sessionType:session","language":"ie","billingCountry":"KSEU","id":"order/wt33749-ks-28f7ff5d15ffaac0eb0d161e3d8c5a35","startDate":"2018-08-23T11:50:34+02:00","login":"wt33749-ks"},"token":null},"version":"1.0","error":null,"id":0}
-               */ 
+               */
               const signin = (email , password , language = 'ie')=>{
                 return request('https://ws.ovh.com/sessionHandler/r4/ws.dispatcher/login', {
                     params: JSON.stringify({
@@ -374,7 +374,7 @@ nw.c({
                       this.nextTick()
                     }else{
 
-                      createOrder(this.sessionIdUser , this.dedicatedServer, this.quantity , this.billingCountry).then(resp=>{
+                      createOrder(this.sessionId , this.dedicatedServer, this.quantity , this.billingCountry).then(resp=>{
                         if(!resp.error && resp.answer && resp.answer.orderId){
                           this.handleSuccess(resp.answer)
                         }else{
@@ -388,6 +388,12 @@ nw.c({
                 setQuantity(v){
                   if(isNaN(v)){
                     this.quantity = v
+                  }
+                }
+
+                setSessionId(v){
+                  if(v != this.sessionId ){
+                    this.sessionId = v
                   }
                 }
 
@@ -446,7 +452,7 @@ nw.c({
                         this.emit('ready')
                       }
                     }
-                    
+
                   })
                 }
 
@@ -471,7 +477,7 @@ nw.c({
                 }
 
                 start(){
-                 
+
                 }
 
                 // 型号 数量
@@ -489,6 +495,12 @@ nw.c({
                   }
                 }
 
+                updateWatchers(){
+                  for(let i in this.watchers){
+                    this.watchers[i].setSessionId( this.sessionId )
+                  }
+                }
+
                 ping(){
                   if( this.sessionId ){
                     sessionHandler( this.sessionId ).then(resp=>{
@@ -503,9 +515,18 @@ nw.c({
                           }, 2000)
                         }else{
                           let session = resp.answer
+                          
+
+                          if(session.id != this.sessionId){
+                            this.updateWatchers()
+                          }
                           this.billingCountry = session.billingCountry
                           this.sessionId = session.id
                           this.language = session.language
+
+                          setTimeout(()=>{
+                            this.ping()
+                          }, 60 * 1000)
                         }
                       }
                     })
@@ -562,7 +583,7 @@ nw.c({
                 return ""
             }
 
-            
+
             const dig = (function($){
                 let retry = 0 , el
 
@@ -580,7 +601,7 @@ nw.c({
                     login()
                   })
 
-                  
+
                 }
 
                 function login(){
@@ -633,4 +654,3 @@ nw.c({
 
     }
 });
-
