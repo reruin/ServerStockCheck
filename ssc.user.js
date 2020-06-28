@@ -490,12 +490,37 @@ nw.c({
                 }
 
                 ping(){
-    
+                  if( this.sessionId ){
+                    sessionHandler( this.sessionId ).then(resp=>{
+                      if(resp === false){
+                        window.setTimeout(()=>{
+                          this.ping()
+                        }, 2000)
+                      }else{
+                        if(resp.error){
+                          window.setTimeout(()=>{
+                            this.ping()
+                          }, 2000)
+                        }else{
+                          let session = resp.answer
+                          this.billingCountry = session.billingCountry
+                          this.sessionId = session.id
+                          this.language = session.language
+                        }
+                      }
+                    })
+                  }else{
+                    setTimeout(()=>{
+                      this.ping()
+                    }, 60 * 1000)
+                  }
+                  /*
                   ping(location.href).then((resp)=>{
                     setTimeout(()=>{
                       this.ping()
                     }, 60 * 1000)
                   })
+                  */
                 }
 
 
